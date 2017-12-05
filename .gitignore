@@ -1,8 +1,6 @@
 .idea
 
-data/data-splits
-data/raw-data
-data/sample-solutions
+data
+report
 
-*.png
-intermediate-report.*
+__pycache__
