@@ -1,8 +1,8 @@
 .idea
 
-data-splits
-raw-data
-sample-solutions
+data/data-splits
+data/raw-data
+data/sample-solutions
 
 *.png
 intermediate-report.*

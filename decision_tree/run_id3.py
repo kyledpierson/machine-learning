@@ -1,64 +1,58 @@
 import numpy as np
+from pandas import qcut
 
-from decision_tree import id3, classify
-from preprocess import discretize, binarize, bins, equal_bins
+from id3 import id3, evaluate_tree, classify
 from preprocess import load_data, write_predictions
 
 if __name__ == "__main__":
     # Parameters -----------------------------------------------------------------------------#
-    preprocessor = lambda data: equal_bins(data, 2)
+    preprocessor = lambda data: qcut(data, 2, labels=False)
 
     # Load the training and testing data
-    num_features = 16
-    train = load_data('../data-splits/data.train', num_features, preprocessor=preprocessor)
-    test = load_data('../data-splits/data.test', num_features, preprocessor=preprocessor)
+    n_features = 16
+    train_data, train_labels = load_data(
+        '../data/data-splits/data.train', n_features=n_features, preprocessor=preprocessor)
+    test_data, test_labels = load_data(
+        '../data/data-splits/data.test', n_features=n_features, preprocessor=preprocessor)
 
     # Create cross-validation sets
-    cv_sets = np.array_split(train, 5)
+    cv_data = np.array_split(np.hstack((train_data, train_labels)), 5)
 
     # Train the tree at different depths -----------------------------------------------------#
-    max_accuracy = 0
-    optimal_depth = 2
-    for i in range(2, num_features + 2):
-        accuracy = []
+    max_acc = 0
+    opt_depth = 0
+    for i in range(2, n_features + 2):
+        acc = []
 
         # 5-fold cross-validation
-        for j in range(len(cv_sets)):
-            test_data = cv_sets[j]
-            train_data = np.vstack(cv_sets[:j] + cv_sets[j + 1:])
+        for j in range(len(cv_data)):
+            cv_test = cv_data[j]
+            cv_train = np.vstack(cv_data[:j] + cv_data[j + 1:])
 
             # Train on the training set
-            tree, depth = id3(train_data, [], i, 0, num_features)
+            tree, depth = id3(cv_train[:, :-1], cv_train[:, -1], max_depth=i)
 
-            # Classify the test set
-            classified = 0
-            for row in test_data:
-                if bool(row[-1]) == classify(row, tree):
-                    classified = classified + 1
+            # Test on the test set
+            cv_acc = evaluate_tree(cv_test[:, :-1], cv_test[:, -1], tree)
+            acc.append(cv_acc)
 
-            accuracy.append(float(classified) / float(len(test_data)))
-
-        new_accuracy = np.mean(accuracy)
-        if new_accuracy > max_accuracy:
-            optimal_depth = i
-            max_accuracy = new_accuracy
+        avg_acc = np.mean(acc)
+        if avg_acc > max_acc:
+            opt_depth = i
+            max_acc = avg_acc
 
         print('Depth limit:   ' + str(i))
         print('Actual depth:  ' + str(depth))
-        print('Accuracy mean: ' + str(new_accuracy))
-        print('Accuracy std:  ' + str(np.std(accuracy)) + '\n')
+        print('Accuracy mean: ' + str(avg_acc))
+        print('Accuracy std:  ' + str(np.std(acc)) + '\n')
 
     # Train with the optimum depth -----------------------------------------------------------#
-    tree, depth = id3(train, [], optimal_depth, 0, num_features)
+    tree, depth = id3(train_data, train_labels, max_depth=opt_depth)
+    test_acc = evaluate_tree(train_data, train_labels, tree)
 
-    classified = 0
-    for row in test:
-        if bool(row[-1]) == classify(row, tree):
-            classified = classified + 1
-    accuracy = float(classified) / float(len(test)) * 100
-
-    print('Optimal depth: ' + str(optimal_depth))
-    print('Test accuracy: ' + str(accuracy) + '%\n')
+    print('Optimal depth: ' + str(opt_depth))
+    print('Test accuracy: ' + str(test_acc) + '%\n')
 
     # Write predictions ----------------------------------------------------------------------#
-    write_predictions('id3', lambda row: classify(row, tree), num_features, preprocessor=preprocessor)
+    write_predictions('id3', lambda row: classify(row, tree),
+                      n_features=n_features, preprocessor=preprocessor)

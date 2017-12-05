@@ -10,12 +10,11 @@ if __name__ == "__main__":
     num_features = 16
     num_components = 3
 
-    train = load_data('../data-splits/data.train', num_features)
-    test = load_data('../data-splits/data.test', num_features)
+    data, labels = load_data('data/data-splits/data.train', num_features)
     pca = PCA(n_components=num_components, whiten=True)
 
-    X = pca.fit_transform(train[:, :-1])
-    labels = np.array(['b' if label else 'r' for label in train[:, -1]])
+    X = pca.fit_transform(data)
+    labels = np.array(['b' if label else 'r' for label in labels])
 
     if num_components == 2:
         plt.scatter(X[:, 0], X[:, 1], c=labels, alpha=0.5)
