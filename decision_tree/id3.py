@@ -71,13 +71,10 @@ def evaluate_forest(data, labels, trees):
     return accuracy
 
 
-# ==================== HELPER FUNCTIONS ==================== #
 def entropy(labels):
-    # Get the positive and negative labels
     pos = np.count_nonzero(labels)
     neg = len(labels) - pos
 
-    # Compute entropy
     left = 0
     right = 0
     if pos > 0:
@@ -90,10 +87,8 @@ def entropy(labels):
 
 
 def info_gain(features, h, labels):
-    # Split into all possible values for the feature
     uniques, indices, counts = np.unique(features, return_inverse=True, return_counts=True)
 
-    # Compute information gain
     summed_h = 0
     split_indices = {}
     for i in range(len(uniques)):
