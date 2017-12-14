@@ -1,5 +1,6 @@
 import numpy as np
-from preprocess import load_data, write_output, write_predictions
+from csv import writer
+from preprocess import load_data, write_output
 
 
 def cross_validate(cv_data, lams):
@@ -100,4 +101,27 @@ if __name__ == '__main__':
     test_acc = classify(test_data, test_labels, like, like_inv)
 
     write_output('Naive Bayes', lam, cv_acc, train_acc, test_acc)
-    # write_predictions('nbayes', predictor, n_features=n_features, pos_labels=True)
+
+    # Write predictions
+    with open('../data/data-splits/data.eval.id') as file:
+        eval_id = [int(line) for line in file]
+    eval_data, _ = load_data('../data/data-splits/data.eval.anon', n_features=n_features, pos_labels=True)
+
+    n_samples, n_features = eval_data.shape
+
+    samples_inv = np.ones((n_samples, n_features)) - eval_data
+    samples_inv = np.hstack((np.zeros((n_samples, 1)), samples_inv))
+    samples = np.hstack((np.ones((n_samples, 1)), eval_data))
+
+    probs = np.dot(samples, like) + np.dot(samples_inv, like_inv)
+    probs = probs.argmax(axis=1).reshape((-1, 1))
+
+    with open('../data/sample-solutions/nbayes_predictions.csv', 'w', newline='') as predictions:
+        predictions_csv = writer(predictions)
+        predictions_csv.writerow(['Id', 'Prediction'])
+
+        for row_num in range(len(eval_id)):
+            row_id = eval_id[row_num]
+            label = probs[row_num]
+
+            predictions_csv.writerow([row_id, int(label)])

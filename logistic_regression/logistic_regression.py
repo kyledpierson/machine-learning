@@ -30,7 +30,7 @@ if __name__ == '__main__':
     sigmas = [0.1, 1, 10, 100, 1000, 10000]
     params = [[{'gamma': g, 'sigma': s} for g in gammas] for s in sigmas]
     params = np.array(params).flatten()
-    max_param = None
+    max_param = {'gamma': 1, 'sigma': 0.1}
 
     n_features = 16
     weights = np.zeros((n_features + 1, 1))

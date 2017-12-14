@@ -56,7 +56,8 @@ def evaluate_tree(data, labels, tree):
     return accuracy
 
 
-def evaluate_forest(data, labels, trees):
+def evaluate_forest(data, labels, trees, name):
+    new_data = []
     classified = 0
     n_samples = data.shape[0]
 
@@ -64,9 +65,13 @@ def evaluate_forest(data, labels, trees):
         predictions = list(map(lambda tree: classify(data[i], tree), trees))
         prediction = mode(predictions)[0][0]
 
+        predictions.append(labels[i])
+        new_data.append(predictions)
+
         if prediction == bool(labels[i]):
             classified = classified + 1
 
+    np.save(name, np.array(new_data).astype(int))
     accuracy = float(classified) / float(n_samples)
     return accuracy
 

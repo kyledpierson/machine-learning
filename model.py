@@ -7,6 +7,7 @@ def cross_validate(cv_data, weights, update_weights, params, update_params):
     max_param = None
 
     for param in params:
+        print(param)
         acc = []
 
         for i in range(len(cv_data)):
