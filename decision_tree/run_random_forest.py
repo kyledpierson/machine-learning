@@ -8,7 +8,7 @@ from preprocess import load_data, write_output, write_predictions
 if __name__ == "__main__":
     preprocessor = lambda data: qcut(data, 2, labels=False)
     num_trees = 1000
-    data_size = 0.75
+    data_size = 0.5
     feature_size = 0.75
     split_size = 0.5
 
@@ -37,9 +37,9 @@ if __name__ == "__main__":
         if (i + 1) % (num_trees / 10) == 0:
             print(str((i + 1) / num_trees * 100) + '%')
 
-    np.save('trees', trees)
-    train_acc = evaluate_forest(train_data, train_labels, trees, 'new_train')
-    test_acc = evaluate_forest(test_data, test_labels, trees, 'new_test')
+    np.save('../data/trees', trees)
+    train_acc = evaluate_forest(train_data, train_labels, trees, '../data/new_train')
+    test_acc = evaluate_forest(test_data, test_labels, trees, '../data/new_test')
 
 
     def predictor(row):

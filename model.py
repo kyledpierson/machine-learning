@@ -32,8 +32,11 @@ def train(data, labels, weights, update_weights, param, update_params, epochs=10
     new_weights = weights
     new_param = copy.copy(param)
 
+    combined = np.hstack((data, labels))
     for e in range(epochs):
-        # data = shuffle(data)
+        np.random.shuffle(combined)
+        data = combined[:, :-1]
+        labels = combined[:, -1]
 
         for i in range(data.shape[0]):
             new_weights = update_weights(data[i], labels[i], new_weights, new_param)

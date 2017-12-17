@@ -1,4 +1,5 @@
 import numpy as np
+from pandas import qcut
 
 from model import cross_validate, train, classify
 from preprocess import load_data, write_output, write_predictions
@@ -30,22 +31,24 @@ if __name__ == '__main__':
     sigmas = [0.1, 1, 10, 100, 1000, 10000]
     params = [[{'gamma': g, 'sigma': s} for g in gammas] for s in sigmas]
     params = np.array(params).flatten()
-    max_param = {'gamma': 1, 'sigma': 0.1}
+
+    max_param = {'gamma': 1, 'sigma': 100}
+    preprocessor = lambda data: qcut(data, 2, labels=False)
 
     n_features = 16
     weights = np.zeros((n_features + 1, 1))
 
     train_data, train_labels = load_data(
-        '../data/data-splits/data.train', n_features=n_features, neg_labels=True, bias=True)
+        '../data/data-splits/data.train', n_features=n_features, neg_labels=True, bias=True, preprocessor=preprocessor)
     test_data, test_labels = load_data(
-        '../data/data-splits/data.test', n_features=n_features, neg_labels=True, bias=True)
+        '../data/data-splits/data.test', n_features=n_features, neg_labels=True, bias=True, preprocessor=preprocessor)
     cv_data = np.array_split(np.hstack((train_data, train_labels)), 5)
 
     cv_acc = 0
     if max_param is None:
         cv_acc, max_param = cross_validate(cv_data, weights, update_weights, params, update_params)
 
-    max_weights = train(train_data, train_labels, weights, update_weights, max_param, update_params)
+    max_weights = train(train_data, train_labels, weights, update_weights, max_param, update_params, epochs=10)
     train_acc = classify(train_data, train_labels, max_weights)
 
     test_acc = classify(test_data, test_labels, max_weights)
@@ -59,4 +62,4 @@ if __name__ == '__main__':
 
 
     write_output('Logistic regression', max_param, cv_acc, train_acc, test_acc)
-    write_predictions('logreg', predictor, n_features=n_features, neg_labels=True, bias=True)
+    write_predictions('logreg', predictor, n_features=n_features, neg_labels=True, bias=True, preprocessor=preprocessor)

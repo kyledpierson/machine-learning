@@ -78,7 +78,7 @@ def classify(data, labels, like, like_inv):
     probs = np.dot(samples, like) + np.dot(samples_inv, like_inv)
     probs = probs.argmax(axis=1).reshape((-1, 1))
 
-    error = np.count_nonzero(probs - labels)
+    error = np.count_nonzero(probs - labels.reshape((-1, 1)))
     accuracy = 1 - error / float(n_samples)
     return accuracy
 

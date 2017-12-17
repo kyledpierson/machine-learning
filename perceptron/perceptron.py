@@ -19,8 +19,11 @@ def train(w, data, labels, r, dynamic, mu, aggressive):
     new_w = w
     new_r = r
 
+    combined = np.hstack((data, labels.reshape((-1, 1))))
     for e in range(10):
-        # np.random.shuffle(data)
+        np.random.shuffle(combined)
+        data = combined[:, :-1]
+        labels = combined[:, -1]
 
         for i in range(data.shape[0]):
             new_w, update = update_weights(new_w, data[i], labels[i],
@@ -87,8 +90,11 @@ def train_dev(w, param, train_data, train_labels, test_data, test_labels,
     new_w = w
     new_r = r
     updates = 0
+    combined = np.hstack((train_data, train_labels))
     for e in range(20):
-        # np.random.shuffle(train_data)
+        np.random.shuffle(combined)
+        train_data = combined[:, :-1]
+        train_labels = combined[:, -1]
 
         for i in range(train_data.shape[0]):
             new_w, update = update_weights(new_w, train_data[i], train_labels[i],
@@ -113,7 +119,7 @@ def train_dev(w, param, train_data, train_labels, test_data, test_labels,
 
 def train_dev_test(
         w, cv_data, train_data, train_labels, dev_data, test_data, test_labels,
-        n_features, name, params, dynamic=False, average=False, aggressive=False):
+        n_features, name, params, dynamic=False, average=False, aggressive=False, preprocessor=lambda x: x):
     cv_acc, max_param = cross_validate(w, params, cv_data, dynamic, average, aggressive)
 
     max_w, train_acc = train_dev(
@@ -129,4 +135,4 @@ def train_dev_test(
         return label
 
     write_output(name, max_param, cv_acc, train_acc, test_acc)
-    write_predictions(name[:3], predictor, n_features=n_features, neg_labels=True, bias=True)
+    write_predictions(name[:3], predictor, n_features=n_features, neg_labels=True, bias=True, preprocessor=preprocessor)

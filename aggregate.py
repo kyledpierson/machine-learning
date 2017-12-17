@@ -2,18 +2,7 @@ import numpy as np
 from csv import writer
 from scipy.stats import mode
 
-learners = [
-    'agg',
-    'ave',
-    'dyn',
-    'id3',
-    'logreg',
-    'mar',
-    'nbayes',
-    'rf',
-    'sim',
-    'svm'
-]
+learners = ['agg', 'ave', 'id3', 'rf', 'svm']
 
 all_labels = None
 for learner in learners:
